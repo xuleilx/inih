@@ -30,6 +30,12 @@ string INIReader::Get(const string& section, const string& name, const string& d
     return _values.count(key) ? _values.find(key)->second : default_value;
 }
 
+string INIReader::GetString(const string& section, const string& name, const string& default_value) const
+{
+    const string str = Get(section, name, "");
+    return str.empty() ? default_value : str;
+}
+
 long INIReader::GetInteger(const string& section, const string& name, long default_value) const
 {
     string valstr = Get(section, name, "");
@@ -62,6 +68,16 @@ bool INIReader::GetBoolean(const string& section, const string& name, bool defau
         return default_value;
 }
 
+bool INIReader::HasValue(const std::string& section, const std::string& name) const
+{
+    string key = MakeKey(section, name);
+    return _values.count(key);
+}
+
+std::set<std::string> INIReader::getSections() const{
+    return _sections;
+}
+
 string INIReader::MakeKey(const string& section, const string& name)
 {
     string key = section + "=" + name;
@@ -73,7 +89,8 @@ string INIReader::MakeKey(const string& section, const string& name)
 int INIReader::ValueHandler(void* user, const char* section, const char* name,
                             const char* value)
 {
-    INIReader* reader = (INIReader*)user;
+    INIReader* reader = static_cast<INIReader*>(user);
+    reader->_sections.insert(section);
     string key = MakeKey(section, name);
     if (reader->_values[key].size() > 0)
         reader->_values[key] += "\n";
